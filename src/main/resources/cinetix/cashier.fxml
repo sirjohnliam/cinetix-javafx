@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.CashierController" styleClass="root-dark">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="30" styleClass="side">
+            <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+            <Label text="CineTix" styleClass="brand"/><Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="step1" styleClass="muted"/><Label fx:id="step2" styleClass="muted"/><Label fx:id="step3" styleClass="muted"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="who"/><Button text="Log out" styleClass="sm" onAction="#logout"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane>
+            <padding><Insets top="22" right="24" bottom="22" left="24"/></padding>
+            <VBox fx:id="pMovies" spacing="8">
+                <Label text="Now showing" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/>
+                <ScrollPane fitToWidth="true" styleClass="clear" VBox.vgrow="ALWAYS"><FlowPane fx:id="posters" hgap="20" vgap="20"><padding><Insets top="10"/></padding></FlowPane></ScrollPane>
+            </VBox>
+            <VBox fx:id="pTimes" spacing="10" visible="false" managed="false">
+                <Button text="Back to now showing" styleClass="link" onAction="#backMovies"/>
+                <HBox spacing="20">
+                    <StackPane fx:id="tPicBox" prefWidth="150" minWidth="150" prefHeight="200"/>
+                    <VBox spacing="10" maxWidth="560"><Label fx:id="tTitle" styleClass="h1"/><Label fx:id="tMeta" styleClass="muted"/>
+                        <Label fx:id="tSynopsis" wrapText="true"/>
+                        <FlowPane fx:id="times" hgap="10" vgap="10" prefWrapLength="600"/>
+                        <Button text="Choose seats" styleClass="btn" onAction="#chooseSeats"/></VBox>
+                </HBox>
+            </VBox>
+            <VBox fx:id="pSeats" spacing="8" visible="false" managed="false">
+                <Button text="Back to showtime" styleClass="link" onAction="#backTimes"/>
+                <Label text="Choose seats" styleClass="h1"/><Label text="Click seats to add them. Red seats are already taken." styleClass="muted"/>
+                <HBox spacing="14" VBox.vgrow="ALWAYS">
+                    <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="TOP_CENTER" spacing="8">
+                        <Region style="-fx-background-color:#9b7bff;" prefHeight="4" maxWidth="400"/><Label text="Screen" styleClass="muted"/>
+                        <GridPane fx:id="grid"/>
+                        <Label text="Outlined = available, purple = selected, red = taken" styleClass="muted"/>
+                    </VBox>
+                    <VBox styleClass="card" prefWidth="270" minWidth="270" spacing="10">
+                        <Label fx:id="sTitle" styleClass="h2"/><Label fx:id="sWhen" styleClass="muted"/><Label fx:id="sCinema"/><Label fx:id="sPrice"/>
+                        <Label fx:id="sSeats" wrapText="true"/><Label fx:id="sTotal" styleClass="h1"/>
+                        <Button text="Review order" styleClass="btn" maxWidth="Infinity" onAction="#review"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

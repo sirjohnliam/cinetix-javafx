@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.AdminController" styleClass="root-dark">
+    <left>
+        <VBox styleClass="side" spacing="4" prefWidth="190" minWidth="190">
+            <padding><Insets top="18" right="12" bottom="18" left="12"/></padding>
+            <Label text="CineTix" styleClass="brand"/><Region prefHeight="14"/>
+            <fx:define><ToggleGroup fx:id="nav"/></fx:define>
+            <ToggleButton text="Dashboard" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <ToggleButton text="Movies" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <ToggleButton text="Schedules" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <ToggleButton text="Seat Taken" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <ToggleButton text="Sales Report" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <Button text="Log out" styleClass="nav" onAction="#logout"/>
+            <Region VBox.vgrow="ALWAYS"/><Label fx:id="who"/>
+        </VBox>
+    </left>
+    <center>
+        <StackPane>
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+            <VBox fx:id="pDash" spacing="12">
+                <Label text="Dashboard" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/>
+                <HBox styleClass="card" spacing="60">
+                    <VBox><Label fx:id="stMovies" styleClass="h1"/><Label text="Movies showing today" styleClass="muted"/></VBox>
+                    <VBox><Label fx:id="stShows" styleClass="h1"/><Label text="Showtimes today" styleClass="muted"/></VBox>
+                    <VBox><Label fx:id="stSales" styleClass="h1"/><Label text="Sales today" styleClass="muted"/></VBox>
+                </HBox>
+                <Label text="Today's showtimes" styleClass="h2"/><TableView fx:id="dashT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox fx:id="pMovies" spacing="12" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Movies" styleClass="h1"/><Label fx:id="movieSub" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add movie" styleClass="btn" onAction="#addMovie"/></HBox>
+                <TableView fx:id="movieT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox fx:id="pSched" spacing="12" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Schedules" styleClass="h1"/><Label text="Showtimes for each date" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add schedule" styleClass="btn" onAction="#addSched"/></HBox>
+                <HBox fx:id="dayBar" spacing="8"/><TableView fx:id="schedT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox fx:id="pSales" spacing="12" visible="false" managed="false">
+                <VBox><Label text="Sales Report" styleClass="h1"/><Label text="Tickets sold and revenue for every day you've made a sale" styleClass="muted"/></VBox>
+                <TableView fx:id="salesT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox fx:id="pRes" spacing="12" visible="false" managed="false">
+                <fx:define><ToggleGroup fx:id="tabs"/></fx:define>
+                <VBox><Label text="Seat Taken" styleClass="h1"/><Label text="Read-only view of what cashiers have sold" styleClass="muted"/></VBox>
+                <HBox spacing="8"><ToggleButton text="Seat Taken" styleClass="pill" toggleGroup="$tabs" selected="true" onAction="#tab"/><ToggleButton text="Reserved seats" styleClass="pill" toggleGroup="$tabs" onAction="#tab"/></HBox>
+                <TableView fx:id="resT" VBox.vgrow="ALWAYS"/>
+                <VBox fx:id="seatView" spacing="10" visible="false" managed="false">
+                    <Label text="Showtime"/><ComboBox fx:id="showCb" prefWidth="460" onAction="#seats"/>
+                    <VBox styleClass="card" alignment="CENTER"><GridPane fx:id="grid"/></VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

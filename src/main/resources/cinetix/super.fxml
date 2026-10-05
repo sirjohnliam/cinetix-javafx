@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.SuperController" styleClass="root-dark">
+    <left>
+        <VBox styleClass="side" spacing="4" prefWidth="190" minWidth="190">
+            <padding><Insets top="18" right="12" bottom="18" left="12"/></padding>
+            <Label text="CineTix" styleClass="brand"/><Region prefHeight="14"/>
+            <fx:define><ToggleGroup fx:id="nav"/></fx:define>
+            <ToggleButton text="Accounts" styleClass="nav" toggleGroup="$nav" selected="true" onAction="#navigate"/>
+            <ToggleButton fx:id="reqNav" text="Account requests" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
+            <Button text="Log out" styleClass="nav" onAction="#logout"/>
+            <Region VBox.vgrow="ALWAYS"/><Label fx:id="who"/>
+        </VBox>
+    </left>
+    <center>
+        <StackPane>
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+            <VBox fx:id="pAcc" spacing="12">
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Accounts" styleClass="h1"/><Label text="Staff who can log in to CineTix" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add account" styleClass="btn" onAction="#add"/></HBox>
+                <TableView fx:id="accT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox fx:id="pReq" spacing="12" visible="false" managed="false">
+                <VBox><Label text="Account requests" styleClass="h1"/><Label text="Sign-ups waiting for your approval" styleClass="muted"/></VBox>
+                <TableView fx:id="reqT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
