@@ -71,7 +71,7 @@ public class Ui {
         Object p = m == null ? null : m.get("poster_path");
         if (p != null && !String.valueOf(p).isBlank()) {
             try {
-                Image img = new Image(new File(String.valueOf(p)).toURI().toString(), w, h, false, true);
+                Image img = new Image(new File(String.valueOf(p)).toURI().toString(), w * 2, h * 2, false, true);
                 if (!img.isError()) {
                     ImageView iv = new ImageView(img); iv.setFitWidth(w); iv.setFitHeight(h); iv.setPreserveRatio(false);
                     Rectangle clip = new Rectangle(w, h); clip.setArcWidth(8); clip.setArcHeight(8); iv.setClip(clip);
@@ -97,12 +97,16 @@ public class Ui {
         return sb.length() == 0 ? "?" : sb.toString();
     }
     /** A small poster thumbnail as the first column of a movies table. */
-    static void posterCol(TableView<Map<String, Object>> t) {
-        TableColumn<Map<String, Object>, Void> c = new TableColumn<>(""); c.setMinWidth(50); c.setMaxWidth(50); c.setSortable(false);
+    static void posterCol(TableView<Map<String, Object>> t) { posterCol(t, 34, 48); }
+    /** Poster column with a custom poster size (w x h). */
+    static void posterCol(TableView<Map<String, Object>> t, double w, double h) {
+        TableColumn<Map<String, Object>, Void> c = new TableColumn<>("");
+        c.setMinWidth(w + 24); c.setPrefWidth(w + 24); c.setMaxWidth(w + 24); c.setSortable(false);
         c.setCellFactory(x -> new TableCell<>() {
+            { setAlignment(Pos.CENTER); }
             @Override protected void updateItem(Void v, boolean empty) {
                 super.updateItem(v, empty);
-                setGraphic(empty ? null : moviePoster(getTableView().getItems().get(getIndex()), 34, 48));
+                setGraphic(empty ? null : moviePoster(getTableView().getItems().get(getIndex()), w, h));
             }
         });
         t.getColumns().add(0, c);
@@ -129,6 +133,7 @@ public class Ui {
         TableColumn<Map<String, Object>, Void> c = new TableColumn<>(""); c.setMinWidth(240);
         c.setCellFactory(x -> new TableCell<>() {
             final HBox box = new HBox(6, btn(n1, f1), btn(n2, f2));
+            { setAlignment(Pos.CENTER_LEFT); box.setAlignment(Pos.CENTER_LEFT); }
             private Button btn(String n, Consumer<Map<String, Object>> f) {
                 Button z = new Button(n); z.getStyleClass().add("sm");
                 z.setOnAction(e -> f.accept(getTableView().getItems().get(getIndex()))); return z;

@@ -88,7 +88,7 @@ public class CashierController {
     @FXML void review() {
         if (sel.isEmpty()) { Ui.info("Select at least one seat."); return; }
         Ui.Tk tk = new Ui.Tk("" + movie.get("title"), "" + show.get("show_date"), "" + show.get("show_time"), "" + show.get("cinema"), String.join(", ", sel), price() * sel.size());
-        ButtonType back = new ButtonType("Back to seats", ButtonBar.ButtonData.CANCEL_CLOSE), ok = new ButtonType("Confirm reservation", ButtonBar.ButtonData.OK_DONE);
+        ButtonType back = new ButtonType("Back to seats", ButtonBar.ButtonData.CANCEL_CLOSE), ok = new ButtonType("Confirm Payment", ButtonBar.ButtonData.OK_DONE);
         Alert a = new Alert(Alert.AlertType.NONE, "", back, ok); a.setTitle("Review order"); a.setHeaderText("Review order. Check the details, then confirm.");
         a.getDialogPane().setContent(Ui.ticket(tk, "Seat not taken yet.")); Ui.style(a.getDialogPane());
         if (a.showAndWait().filter(b -> b == ok).isPresent()) confirm(tk);

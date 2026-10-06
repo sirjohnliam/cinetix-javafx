@@ -8,19 +8,62 @@
             <padding><Insets top="18" right="12" bottom="18" left="12"/></padding>
             <Label text="CineTix" styleClass="brand"/><Region prefHeight="14"/>
             <fx:define><ToggleGroup fx:id="nav"/></fx:define>
-            <ToggleButton text="Accounts" styleClass="nav" toggleGroup="$nav" selected="true" onAction="#navigate"/>
-            <ToggleButton fx:id="reqNav" text="Account requests" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <Button text="Log out" styleClass="nav" onAction="#logout"/>
-            <Region VBox.vgrow="ALWAYS"/><Label fx:id="who"/>
+            <ToggleButton text="Overview" styleClass="nav" toggleGroup="$nav" selected="true" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Accounts" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton fx:id="reqNav" text="Account requests" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <Button text="Log out" styleClass="nav" onAction="#logout" maxWidth="Infinity"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox spacing="2">
+                <Label fx:id="who" style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+                <Label fx:id="role" style="-fx-text-fill: #8b87a0; -fx-font-size: 11px;"/>
+            </VBox>
         </VBox>
     </left>
     <center>
         <StackPane>
             <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-            <VBox fx:id="pAcc" spacing="12">
+
+            <!-- OVERVIEW -->
+            <VBox fx:id="pOver" spacing="12">
+                <VBox spacing="4"><Label text="Overview" styleClass="h1"/><Label text="Overall sales results of the cinema" styleClass="muted"/></VBox>
+
+                <HBox spacing="12" alignment="BOTTOM_LEFT">
+                    <VBox spacing="4"><Label text="From" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="fromDp" prefWidth="160"/></VBox>
+                    <VBox spacing="4"><Label text="To" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="toDp" prefWidth="160"/></VBox>
+                    <Button text="Apply" styleClass="btn" onAction="#loadOver"/>
+                </HBox>
+
+                <ScrollPane styleClass="clear" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                    <VBox spacing="16">
+                        <padding><Insets top="0" right="8" bottom="8" left="0"/></padding>
+
+                        <HBox styleClass="card" spacing="0" style="-fx-padding: 0;">
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20;">
+                                <Label fx:id="sTotal" styleClass="h1"/><Label text="Total sales" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="sTix" styleClass="h1"/><Label text="Tickets sold" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="sTx" styleClass="h1"/><Label text="Transactions" styleClass="muted"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox styleClass="card" spacing="10"><Label text="Sales per movie" styleClass="h2"/><TableView fx:id="sMovieT" styleClass="dash-table"/></VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Sales per day" styleClass="h2"/><TableView fx:id="sDayT" styleClass="dash-table"/></VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Sales per cashier" styleClass="h2"/><TableView fx:id="sCashT" styleClass="dash-table"/></VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Transactions" styleClass="h2"/><TableView fx:id="sTxT" styleClass="dash-table"/></VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- ACCOUNTS -->
+            <VBox fx:id="pAcc" spacing="12" visible="false" managed="false">
                 <HBox alignment="CENTER_LEFT"><VBox><Label text="Accounts" styleClass="h1"/><Label text="Staff who can log in to CineTix" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add account" styleClass="btn" onAction="#add"/></HBox>
                 <TableView fx:id="accT" VBox.vgrow="ALWAYS"/>
             </VBox>
+
+            <!-- ACCOUNT REQUESTS -->
             <VBox fx:id="pReq" spacing="12" visible="false" managed="false">
                 <VBox><Label text="Account requests" styleClass="h1"/><Label text="Sign-ups waiting for your approval" styleClass="muted"/></VBox>
                 <TableView fx:id="reqT" VBox.vgrow="ALWAYS"/>

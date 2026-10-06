@@ -4,31 +4,51 @@ import cinetix.Ui.F;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
-/** Admin: manages the system (dashboard, movies, schedules, read-only reservations). */
+/** Admin: manages the system (dashboard, movies, schedules, sales report, read-only seat map). */
 public class AdminController {
     @FXML ToggleGroup nav, tabs;
-    @FXML Label who, dateLbl, stMovies, stShows, stSales, movieSub;
+    @FXML Label who, role, dateLbl, stMovies, stShows, stTix, stSales, movieSub, sTotal, sTix, sTx;
     @FXML VBox pDash, pMovies, pSched, pRes, pSales, seatView;
     @FXML HBox dayBar;
-    @FXML TableView<Map<String, Object>> dashT, movieT, schedT, resT, salesT;
+    @FXML DatePicker fromDp, toDp;
+    @FXML TableView<Map<String, Object>> dashT, salesMovieT, movieT, schedT, resT, sMovieT, sDayT, sCashT, sTxT;
     @FXML ComboBox<String> showCb;
     @FXML GridPane grid;
     String day = LocalDate.now().toString();
     List<Map<String, Object>> movies = new ArrayList<>();
 
     @FXML void initialize() {
-        who.setText(App.name + "\nAdmin");
+        who.setText(App.name); role.setText("Admin");
         dateLbl.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US)));
-        Ui.cols(dashT, "Time", "@show_time", "Movie", "title", "Cinema", "cinema", "Seats filled", "%filled");
-        Ui.cols(salesT, "Date", "sale_date", "Tickets sold", "tickets", "Total sales", "$total");
+
+        // dashboard tables
+        Ui.cols(dashT, "Time", "@show_time", "Movie", "title", "Cinema", "cinema");
+        dashT.getColumns().add(filledCol());
+        Ui.cols(salesMovieT, "Movie", "title", "Tickets sold", "tickets", "Sales", "$total");
+
+        // sales report tables
+        Ui.cols(sMovieT, "Movie", "title", "Tickets sold", "tickets", "Sales", "$total");
+        Ui.cols(sDayT, "Date", "day_lbl", "Tickets sold", "tickets", "Sales", "$total");
+        Ui.cols(sCashT, "Cashier", "cashier", "Transactions", "transactions", "Tickets", "tickets", "Sales", "$total");
+        Ui.cols(sTxT, "Code", "code", "Movie", "title", "Showtime", "showtime", "Seats", "seats", "Total", "$total", "Sold by", "sold_by");
+        fromDp.setValue(LocalDate.now()); toDp.setValue(LocalDate.now());
+
+        for (var t : List.of(dashT, salesMovieT, sMovieT, sDayT, sCashT, sTxT)) {
+            t.setFixedCellSize(54); t.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        }
+
+        // other tables
         Ui.cols(movieT, "Movie", "title", "Genre", "genre", "Rating", "rating", "Length (min)", "length");
-        Ui.posterCol(movieT);
+        Ui.posterCol(movieT, 90, 130);
+        movieT.setFixedCellSize(150);
         Ui.cols(schedT, "Time", "@show_time", "Movie", "title", "Cinema", "cinema", "Price", "$price", "Seats left", "seats_left");
         Ui.cols(resT, "Code", "code", "Movie", "title", "Showtime", "showtime", "Seat", "seats", "Total", "$total", "Sold by", "sold_by");
         Ui.actions(movieT, "Edit", this::movieForm, "Delete", m -> {
@@ -45,8 +65,34 @@ public class AdminController {
     void show(String n) {
         nav.getToggles().forEach(t -> t.setSelected(((ToggleButton) t).getText().equals(n)));
         Ui.vis(pDash, n.equals("Dashboard")); Ui.vis(pMovies, n.equals("Movies")); Ui.vis(pSched, n.equals("Schedules"));
-        Ui.vis(pSales, n.equals("Sales Report")); Ui.vis(pRes, n.equals("Seat Taken"));
-        switch (n) { case "Dashboard" -> loadDash(); case "Movies" -> loadMovies(); case "Schedules" -> loadSched(); case "Sales Report" -> loadSales(); default -> loadRes(); }
+        Ui.vis(pSales, n.equals("Sales report")); Ui.vis(pRes, n.equals("Seat map"));
+        switch (n) { case "Dashboard" -> loadDash(); case "Movies" -> loadMovies(); case "Schedules" -> loadSched(); case "Sales report" -> loadSales(); default -> loadRes(); }
+    }
+
+    // ---- helpers ----
+    /** Fills a table and sizes it to its rows (no empty striped rows). */
+    void rows(TableView<Map<String, Object>> t, List<Map<String, Object>> data) {
+        t.setItems(FXCollections.observableArrayList(data));
+        double h = Math.max(1, data.size()) * 54 + 42;
+        t.setPrefHeight(h); t.setMinHeight(h); t.setMaxHeight(h);
+    }
+
+    /** "Seats filled" column with a progress bar + percent. */
+    TableColumn<Map<String, Object>, Object> filledCol() {
+        TableColumn<Map<String, Object>, Object> c = new TableColumn<>("Seats filled");
+        c.setCellValueFactory(x -> new SimpleObjectProperty<>(x.getValue().get("filled")));
+        c.setCellFactory(col -> new TableCell<>() {
+            final ProgressBar pb = new ProgressBar(); final Label l = new Label(); final HBox box = new HBox(12, pb, l);
+            { pb.getStyleClass().add("dash-bar"); pb.setPrefWidth(2000); pb.setMaxWidth(Double.MAX_VALUE);
+                HBox.setHgrow(pb, Priority.ALWAYS); l.setMinWidth(36); box.setAlignment(Pos.CENTER_LEFT); }
+            @Override protected void updateItem(Object v, boolean empty) {
+                super.updateItem(v, empty);
+                if (empty || v == null) { setGraphic(null); return; }
+                double p = ((Number) v).doubleValue(); pb.setProgress(p / 100); l.setText((int) p + "%"); setGraphic(box);
+            }
+        });
+        c.setSortable(false);
+        return c;
     }
 
     // ---- dashboard ----
@@ -54,17 +100,49 @@ public class AdminController {
         Ui.safe(() -> {
             stMovies.setText("" + Db.one("SELECT COUNT(DISTINCT movie_id) FROM schedules WHERE show_date=CURDATE()"));
             stShows.setText("" + Db.one("SELECT COUNT(*) FROM schedules WHERE show_date=CURDATE()"));
+            stTix.setText("" + Db.one("SELECT COUNT(*) FROM reservations WHERE DATE(created_at)=CURDATE()"));
             stSales.setText(Ui.peso(Db.one("SELECT COALESCE(SUM(price),0) FROM reservations WHERE DATE(created_at)=CURDATE()")));
-            dashT.setItems(FXCollections.observableArrayList(Db.query("SELECT s.show_time, m.title, s.cinema,"
+            rows(salesMovieT, Db.query("SELECT m.title, COUNT(*) tickets, SUM(r.price) total FROM reservations r"
+                    + " JOIN schedules s ON s.id=r.schedule_id JOIN movies m ON m.id=s.movie_id"
+                    + " WHERE DATE(r.created_at)=CURDATE() GROUP BY m.title ORDER BY total DESC"));
+            rows(dashT, Db.query("SELECT s.show_time, m.title, s.cinema,"
                     + " ROUND(100*(SELECT COUNT(*) FROM reservations r WHERE r.schedule_id=s.id)/" + Db.CAPACITY + ") filled"
-                    + " FROM schedules s JOIN movies m ON m.id=s.movie_id WHERE s.show_date=CURDATE() ORDER BY s.show_time")));
+                    + " FROM schedules s JOIN movies m ON m.id=s.movie_id WHERE s.show_date=CURDATE() ORDER BY s.show_time"));
         });
     }
 
     // ---- sales report ----
-    void loadSales() {
-        Ui.safe(() -> salesT.setItems(FXCollections.observableArrayList(Db.query("SELECT DATE(created_at) sale_date,"
-                + " COUNT(DISTINCT code) tickets, SUM(price) total FROM reservations GROUP BY DATE(created_at) ORDER BY sale_date DESC"))));
+    @FXML void loadSales() {
+        LocalDate f = fromDp.getValue(), t = toDp.getValue();
+        if (f == null || t == null) { Ui.info("Pick both a From and a To date."); return; }
+        if (f.isAfter(t)) { Ui.info("The From date can't be after the To date."); return; }
+        String a = f.toString(), b = t.toString();
+        Ui.safe(() -> {
+            var sum = Db.query("SELECT COALESCE(SUM(price),0) total, COUNT(*) tickets, COUNT(DISTINCT code) tx"
+                    + " FROM reservations WHERE DATE(created_at) BETWEEN ? AND ?", a, b).get(0);
+            sTotal.setText(Ui.peso(sum.get("total")));
+            sTix.setText("" + sum.get("tickets"));
+            sTx.setText("" + sum.get("tx"));
+
+            rows(sMovieT, Db.query("SELECT m.title, COUNT(*) tickets, SUM(r.price) total FROM reservations r"
+                    + " JOIN schedules s ON s.id=r.schedule_id JOIN movies m ON m.id=s.movie_id"
+                    + " WHERE DATE(r.created_at) BETWEEN ? AND ? GROUP BY m.title ORDER BY total DESC", a, b));
+
+            rows(sDayT, Db.query("SELECT DATE_FORMAT(created_at,'%a, %b %e') day_lbl, COUNT(*) tickets, SUM(price) total"
+                    + " FROM reservations WHERE DATE(created_at) BETWEEN ? AND ?"
+                    + " GROUP BY DATE(created_at), DATE_FORMAT(created_at,'%a, %b %e') ORDER BY DATE(created_at) DESC", a, b));
+
+            rows(sCashT, Db.query("SELECT u.name cashier, COUNT(DISTINCT r.code) transactions, COUNT(*) tickets, SUM(r.price) total"
+                    + " FROM reservations r JOIN users u ON u.id=r.sold_by"
+                    + " WHERE DATE(r.created_at) BETWEEN ? AND ? GROUP BY u.id, u.name ORDER BY total DESC", a, b));
+
+            rows(sTxT, Db.query("SELECT r.code, m.title,"
+                    + " CONCAT(DATE_FORMAT(s.show_date,'%a, %b %e'),', ',TIME_FORMAT(s.show_time,'%l:%i %p'),' · ',s.cinema) showtime,"
+                    + " GROUP_CONCAT(r.seat ORDER BY r.seat SEPARATOR ', ') seats, SUM(r.price) total, u.name sold_by"
+                    + " FROM reservations r JOIN schedules s ON s.id=r.schedule_id JOIN movies m ON m.id=s.movie_id JOIN users u ON u.id=r.sold_by"
+                    + " WHERE DATE(r.created_at) BETWEEN ? AND ?"
+                    + " GROUP BY r.code, m.title, s.show_date, s.show_time, s.cinema, u.name ORDER BY MIN(r.created_at) DESC", a, b));
+        });
     }
 
     // ---- movies ----
@@ -124,7 +202,7 @@ public class AdminController {
                 }));
     }
 
-    // ---- reservations (read-only) ----
+    // ---- seat map (read-only) ----
     @FXML void tab() { if (tabs.getSelectedToggle() == null) tabs.getToggles().get(0).setSelected(true); loadRes(); }
     void loadRes() {
         boolean list = tabs.getToggles().get(0).isSelected();

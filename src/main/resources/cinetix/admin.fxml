@@ -8,43 +8,119 @@
             <padding><Insets top="18" right="12" bottom="18" left="12"/></padding>
             <Label text="CineTix" styleClass="brand"/><Region prefHeight="14"/>
             <fx:define><ToggleGroup fx:id="nav"/></fx:define>
-            <ToggleButton text="Dashboard" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <ToggleButton text="Movies" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <ToggleButton text="Schedules" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <ToggleButton text="Seat Taken" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <ToggleButton text="Sales Report" styleClass="nav" toggleGroup="$nav" onAction="#navigate"/>
-            <Button text="Log out" styleClass="nav" onAction="#logout"/>
-            <Region VBox.vgrow="ALWAYS"/><Label fx:id="who"/>
+            <ToggleButton text="Dashboard" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Movies" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Schedules" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Sales report" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Seat map" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <Button text="Log out" styleClass="nav" onAction="#logout" maxWidth="Infinity"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox spacing="2">
+                <Label fx:id="who" style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+                <Label fx:id="role" style="-fx-text-fill: #8b87a0; -fx-font-size: 11px;"/>
+            </VBox>
         </VBox>
     </left>
     <center>
         <StackPane>
             <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-            <VBox fx:id="pDash" spacing="12">
-                <Label text="Dashboard" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/>
-                <HBox styleClass="card" spacing="60">
-                    <VBox><Label fx:id="stMovies" styleClass="h1"/><Label text="Movies showing today" styleClass="muted"/></VBox>
-                    <VBox><Label fx:id="stShows" styleClass="h1"/><Label text="Showtimes today" styleClass="muted"/></VBox>
-                    <VBox><Label fx:id="stSales" styleClass="h1"/><Label text="Sales today" styleClass="muted"/></VBox>
+
+            <!-- DASHBOARD -->
+            <VBox fx:id="pDash" spacing="16">
+                <VBox spacing="4"><Label text="Dashboard" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/></VBox>
+
+                <HBox styleClass="card" spacing="0" style="-fx-padding: 0;">
+                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25;">
+                        <Label fx:id="stMovies" styleClass="h1"/><Label text="Movies showing today" styleClass="muted"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                        <Label fx:id="stShows" styleClass="h1"/><Label text="Showtimes today" styleClass="muted"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                        <Label fx:id="stTix" styleClass="h1"/><Label text="Tickets sold today" styleClass="muted"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                        <Label fx:id="stSales" styleClass="h1"/><Label text="Sales today" styleClass="muted"/>
+                    </VBox>
                 </HBox>
-                <Label text="Today's showtimes" styleClass="h2"/><TableView fx:id="dashT" VBox.vgrow="ALWAYS"/>
+
+                <VBox styleClass="card" spacing="10">
+                    <Label text="Sales per movie (today)" styleClass="h2"/>
+                    <TableView fx:id="salesMovieT" styleClass="dash-table"/>
+                </VBox>
+
+                <VBox styleClass="card" spacing="10">
+                    <Label text="Today's showtimes" styleClass="h2"/>
+                    <TableView fx:id="dashT" styleClass="dash-table"/>
+                </VBox>
             </VBox>
+
+            <!-- MOVIES -->
             <VBox fx:id="pMovies" spacing="12" visible="false" managed="false">
                 <HBox alignment="CENTER_LEFT"><VBox><Label text="Movies" styleClass="h1"/><Label fx:id="movieSub" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add movie" styleClass="btn" onAction="#addMovie"/></HBox>
                 <TableView fx:id="movieT" VBox.vgrow="ALWAYS"/>
             </VBox>
+
+            <!-- SCHEDULES -->
             <VBox fx:id="pSched" spacing="12" visible="false" managed="false">
                 <HBox alignment="CENTER_LEFT"><VBox><Label text="Schedules" styleClass="h1"/><Label text="Showtimes for each date" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add schedule" styleClass="btn" onAction="#addSched"/></HBox>
                 <HBox fx:id="dayBar" spacing="8"/><TableView fx:id="schedT" VBox.vgrow="ALWAYS"/>
             </VBox>
+
+            <!-- SALES REPORT -->
             <VBox fx:id="pSales" spacing="12" visible="false" managed="false">
-                <VBox><Label text="Sales Report" styleClass="h1"/><Label text="Tickets sold and revenue for every day you've made a sale" styleClass="muted"/></VBox>
-                <TableView fx:id="salesT" VBox.vgrow="ALWAYS"/>
+                <VBox spacing="4"><Label text="Sales report" styleClass="h1"/><Label text="Walk-in ticket sales made by the cashiers" styleClass="muted"/></VBox>
+
+                <HBox spacing="12" alignment="BOTTOM_LEFT">
+                    <VBox spacing="4"><Label text="From" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="fromDp" prefWidth="160"/></VBox>
+                    <VBox spacing="4"><Label text="To" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="toDp" prefWidth="160"/></VBox>
+                    <Button text="Apply" styleClass="btn" onAction="#loadSales"/>
+                </HBox>
+
+                <ScrollPane styleClass="clear" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                    <VBox spacing="16">
+                        <padding><Insets top="0" right="8" bottom="8" left="0"/></padding>
+
+                        <HBox styleClass="card" spacing="0" style="-fx-padding: 0;">
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20;">
+                                <Label fx:id="sTotal" styleClass="h1"/><Label text="Total sales" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="sTix" styleClass="h1"/><Label text="Tickets sold" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 20 20 20; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="sTx" styleClass="h1"/><Label text="Transactions" styleClass="muted"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox styleClass="card" spacing="10">
+                            <Label text="Sales per movie" styleClass="h2"/>
+                            <TableView fx:id="sMovieT" styleClass="dash-table"/>
+                        </VBox>
+
+                        <VBox styleClass="card" spacing="10">
+                            <Label text="Sales per day" styleClass="h2"/>
+                            <TableView fx:id="sDayT" styleClass="dash-table"/>
+                        </VBox>
+
+                        <VBox styleClass="card" spacing="10">
+                            <Label text="Sales per cashier" styleClass="h2"/>
+                            <TableView fx:id="sCashT" styleClass="dash-table"/>
+                        </VBox>
+
+                        <VBox styleClass="card" spacing="10">
+                            <Label text="Transactions" styleClass="h2"/>
+                            <TableView fx:id="sTxT" styleClass="dash-table"/>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
             </VBox>
+
+            <!-- SEAT MAP -->
             <VBox fx:id="pRes" spacing="12" visible="false" managed="false">
                 <fx:define><ToggleGroup fx:id="tabs"/></fx:define>
-                <VBox><Label text="Seat Taken" styleClass="h1"/><Label text="Read-only view of what cashiers have sold" styleClass="muted"/></VBox>
-                <HBox spacing="8"><ToggleButton text="Seat Taken" styleClass="pill" toggleGroup="$tabs" selected="true" onAction="#tab"/><ToggleButton text="Reserved seats" styleClass="pill" toggleGroup="$tabs" onAction="#tab"/></HBox>
+                <VBox><Label text="Seat map" styleClass="h1"/><Label text="Read-only view of what cashiers have sold" styleClass="muted"/></VBox>
+                <HBox spacing="8"><ToggleButton text="Seat Taken" styleClass="pill" toggleGroup="$tabs" selected="true" onAction="#tab"/><ToggleButton text="Seat Map" styleClass="pill" toggleGroup="$tabs" onAction="#tab"/></HBox>
                 <TableView fx:id="resT" VBox.vgrow="ALWAYS"/>
                 <VBox fx:id="seatView" spacing="10" visible="false" managed="false">
                     <Label text="Showtime"/><ComboBox fx:id="showCb" prefWidth="460" onAction="#seats"/>

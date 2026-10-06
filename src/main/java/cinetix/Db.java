@@ -36,8 +36,8 @@ public class Db {
                     + " status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',"
                     + " created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)");
             // Lets an older database (created before this update) catch up without the user deleting it.
-            tryExec(s, "ALTER TABLE movies ADD COLUMN synopsis TEXT");
-            tryExec(s, "ALTER TABLE movies ADD COLUMN poster_path VARCHAR(400)");
+            tryExec(s, "ALTER TABLE movies ADD COLUMN IF NOT EXISTS synopsis TEXT");
+            tryExec(s, "ALTER TABLE movies ADD COLUMN IF NOT EXISTS poster_path VARCHAR(400)");
         }
         if (one("SELECT 1 FROM users") == null) {
             String[][] u = {{"Clowee Aganap","clowee5","super123","superadmin"},{"Admin User","admin1","admin123","admin"},{"Liam Serrano","liams1","cashier123","cashier"}};
