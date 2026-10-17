@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.AdminController" styleClass="root-dark">
@@ -10,9 +11,10 @@
             <fx:define><ToggleGroup fx:id="nav"/></fx:define>
             <ToggleButton text="Dashboard" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
             <ToggleButton text="Movies" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
-            <ToggleButton text="Schedules" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
-            <ToggleButton text="Sales report" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
             <ToggleButton text="Seat map" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Sales report" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton fx:id="navAccounts" text="Accounts" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Archive" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
             <Button text="Log out" styleClass="nav" onAction="#logout" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
             <VBox spacing="2">
@@ -26,45 +28,103 @@
             <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
 
             <!-- DASHBOARD -->
-            <VBox fx:id="pDash" spacing="16">
+            <VBox fx:id="pDash" spacing="12">
                 <VBox spacing="4"><Label text="Dashboard" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/></VBox>
 
-                <HBox styleClass="card" spacing="0" style="-fx-padding: 0;">
-                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25;">
-                        <Label fx:id="stMovies" styleClass="h1"/><Label text="Movies showing today" styleClass="muted"/>
-                    </VBox>
-                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
-                        <Label fx:id="stShows" styleClass="h1"/><Label text="Showtimes today" styleClass="muted"/>
-                    </VBox>
-                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
-                        <Label fx:id="stTix" styleClass="h1"/><Label text="Tickets sold today" styleClass="muted"/>
-                    </VBox>
-                    <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 24 25 22 25; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
-                        <Label fx:id="stSales" styleClass="h1"/><Label text="Sales today" styleClass="muted"/>
-                    </VBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <fx:define><ToggleGroup fx:id="range"/></fx:define>
+                    <ToggleButton text="Today" styleClass="pill" toggleGroup="$range" selected="true" onAction="#pickRange"/>
+                    <ToggleButton text="Last 7 days" styleClass="pill" toggleGroup="$range" onAction="#pickRange"/>
+                    <ToggleButton text="Last 30 days" styleClass="pill" toggleGroup="$range" onAction="#pickRange"/>
+                    <ToggleButton fx:id="rCustom" text="Custom" styleClass="pill" toggleGroup="$range" onAction="#pickRange"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Genre"/><ComboBox fx:id="genreCb" prefWidth="160" onAction="#loadDash"/>
+                </HBox>
+                <HBox fx:id="customBar" spacing="12" alignment="BOTTOM_LEFT" visible="false" managed="false">
+                    <VBox spacing="4"><Label text="From" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="dFromDp" prefWidth="160"/></VBox>
+                    <VBox spacing="4"><Label text="To" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="dToDp" prefWidth="160"/></VBox>
+                    <Button text="Apply" styleClass="btn" onAction="#loadDash"/>
                 </HBox>
 
-                <VBox styleClass="card" spacing="10">
-                    <Label text="Sales per movie (today)" styleClass="h2"/>
-                    <TableView fx:id="salesMovieT" styleClass="dash-table"/>
-                </VBox>
+                <ScrollPane styleClass="clear" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                    <VBox spacing="16">
+                        <padding><Insets top="0" right="8" bottom="8" left="0"/></padding>
 
-                <VBox styleClass="card" spacing="10">
-                    <Label text="Today's showtimes" styleClass="h2"/>
-                    <TableView fx:id="dashT" styleClass="dash-table"/>
-                </VBox>
+                        <HBox styleClass="card" spacing="0" style="-fx-padding: 0;">
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 24 20 24;">
+                                <Label fx:id="stSales" styleClass="h1"/><Label text="Total sales" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 24 20 24; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="stTix" styleClass="h1"/><Label text="Tickets sold" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 24 20 24; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="stTx" styleClass="h1"/><Label text="Transactions" styleClass="muted"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" maxWidth="Infinity" spacing="4" style="-fx-padding: 22 24 20 24; -fx-border-color: #3a3550; -fx-border-width: 0 0 0 1;">
+                                <Label fx:id="stShows" styleClass="h1"/><Label text="Showtimes today" styleClass="muted"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="16">
+                            <VBox styleClass="card" spacing="6" HBox.hgrow="ALWAYS" prefWidth="10" maxWidth="Infinity">
+                                <Label text="Sales over time" styleClass="h2"/>
+                                <LineChart fx:id="lineSales" legendVisible="false" animated="false" prefHeight="270" minHeight="270">
+                                    <xAxis><CategoryAxis/></xAxis>
+                                    <yAxis><NumberAxis label="Sales (₱)"/></yAxis>
+                                </LineChart>
+                            </VBox>
+                            <VBox styleClass="card" spacing="6" HBox.hgrow="ALWAYS" prefWidth="10" maxWidth="Infinity">
+                                <Label text="Sales by genre" styleClass="h2"/>
+                                <PieChart fx:id="pieGenre" legendSide="RIGHT" labelsVisible="false" animated="false" prefHeight="270" minHeight="270"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="16">
+                            <VBox styleClass="card" spacing="6" HBox.hgrow="ALWAYS" prefWidth="10" maxWidth="Infinity">
+                                <Label text="Tickets per movie" styleClass="h2"/>
+                                <BarChart fx:id="barMovies" legendVisible="false" animated="false" categoryGap="14" prefHeight="270" minHeight="270">
+                                    <xAxis><CategoryAxis/></xAxis>
+                                    <yAxis><NumberAxis label="Tickets"/></yAxis>
+                                </BarChart>
+                            </VBox>
+                            <VBox fx:id="cashCard" styleClass="card" spacing="6" HBox.hgrow="ALWAYS" prefWidth="10" maxWidth="Infinity">
+                                <Label text="Sales per cashier" styleClass="h2"/>
+                                <BarChart fx:id="barCash" legendVisible="false" animated="false" categoryGap="14" prefHeight="270" minHeight="270">
+                                    <xAxis><CategoryAxis/></xAxis>
+                                    <yAxis><NumberAxis label="Sales (₱)"/></yAxis>
+                                </BarChart>
+                            </VBox>
+                        </HBox>
+
+                        <VBox styleClass="card" spacing="10">
+                            <Label text="Today's showtimes" styleClass="h2"/>
+                            <TableView fx:id="dashT" styleClass="dash-table"/>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
             </VBox>
 
-            <!-- MOVIES -->
+            <!-- MOVIES (movie + its showtimes are made together) -->
             <VBox fx:id="pMovies" spacing="12" visible="false" managed="false">
-                <HBox alignment="CENTER_LEFT"><VBox><Label text="Movies" styleClass="h1"/><Label fx:id="movieSub" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add movie" styleClass="btn" onAction="#addMovie"/></HBox>
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Movies" styleClass="h1"/><Label fx:id="movieSub" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add movie" styleClass="btn ok" onAction="#addMovie"/></HBox>
                 <TableView fx:id="movieT" VBox.vgrow="ALWAYS"/>
             </VBox>
 
-            <!-- SCHEDULES -->
-            <VBox fx:id="pSched" spacing="12" visible="false" managed="false">
-                <HBox alignment="CENTER_LEFT"><VBox><Label text="Schedules" styleClass="h1"/><Label text="Showtimes for each date" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add schedule" styleClass="btn" onAction="#addSched"/></HBox>
-                <HBox fx:id="dayBar" spacing="8"/><TableView fx:id="schedT" VBox.vgrow="ALWAYS"/>
+            <!-- SEAT MAP -->
+            <VBox fx:id="pRes" spacing="12" visible="false" managed="false">
+                <fx:define><ToggleGroup fx:id="tabs"/></fx:define>
+                <VBox><Label text="Seat map" styleClass="h1"/><Label text="Read-only view of what cashiers have sold" styleClass="muted"/></VBox>
+                <HBox spacing="8"><ToggleButton text="Seat taken" styleClass="pill" toggleGroup="$tabs" selected="true" onAction="#tab"/><ToggleButton text="Seat map" styleClass="pill" toggleGroup="$tabs" onAction="#tab"/></HBox>
+                <TableView fx:id="resT" VBox.vgrow="ALWAYS"/>
+                <VBox fx:id="seatView" spacing="10" visible="false" managed="false" VBox.vgrow="ALWAYS">
+                    <HBox spacing="12" alignment="BOTTOM_LEFT">
+                        <VBox spacing="4"><Label text="Movie" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><ComboBox fx:id="seatMovieCb" prefWidth="320" onAction="#seats"/></VBox>
+                        <VBox spacing="4"><Label text="Date" style="-fx-font-size: 12px; -fx-font-weight: bold;"/><DatePicker fx:id="seatDp" prefWidth="160" onAction="#seats"/></VBox>
+                    </HBox>
+                    <ScrollPane styleClass="clear" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                        <FlowPane fx:id="seatCards" hgap="16" vgap="16"><padding><Insets top="4" right="8" bottom="8" left="0"/></padding></FlowPane>
+                    </ScrollPane>
+                </VBox>
             </VBox>
 
             <!-- SALES REPORT -->
@@ -93,39 +153,32 @@
                             </VBox>
                         </HBox>
 
-                        <VBox styleClass="card" spacing="10">
-                            <Label text="Sales per movie" styleClass="h2"/>
-                            <TableView fx:id="sMovieT" styleClass="dash-table"/>
-                        </VBox>
-
-                        <VBox styleClass="card" spacing="10">
-                            <Label text="Sales per day" styleClass="h2"/>
-                            <TableView fx:id="sDayT" styleClass="dash-table"/>
-                        </VBox>
-
-                        <VBox styleClass="card" spacing="10">
-                            <Label text="Sales per cashier" styleClass="h2"/>
-                            <TableView fx:id="sCashT" styleClass="dash-table"/>
-                        </VBox>
-
-                        <VBox styleClass="card" spacing="10">
-                            <Label text="Transactions" styleClass="h2"/>
-                            <TableView fx:id="sTxT" styleClass="dash-table"/>
-                        </VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Sales per movie" styleClass="h2"/><TableView fx:id="sMovieT" styleClass="dash-table"/></VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Sales per day" styleClass="h2"/><TableView fx:id="sDayT" styleClass="dash-table"/></VBox>
+                        <VBox fx:id="sCashCard" styleClass="card" spacing="10"><Label text="Sales per cashier" styleClass="h2"/><TableView fx:id="sCashT" styleClass="dash-table"/></VBox>
+                        <VBox styleClass="card" spacing="10"><Label text="Transactions" styleClass="h2"/><TableView fx:id="sTxT" styleClass="dash-table"/></VBox>
                     </VBox>
                 </ScrollPane>
             </VBox>
 
-            <!-- SEAT MAP -->
-            <VBox fx:id="pRes" spacing="12" visible="false" managed="false">
-                <fx:define><ToggleGroup fx:id="tabs"/></fx:define>
-                <VBox><Label text="Seat map" styleClass="h1"/><Label text="Read-only view of what cashiers have sold" styleClass="muted"/></VBox>
-                <HBox spacing="8"><ToggleButton text="Seat Taken" styleClass="pill" toggleGroup="$tabs" selected="true" onAction="#tab"/><ToggleButton text="Seat Map" styleClass="pill" toggleGroup="$tabs" onAction="#tab"/></HBox>
-                <TableView fx:id="resT" VBox.vgrow="ALWAYS"/>
-                <VBox fx:id="seatView" spacing="10" visible="false" managed="false">
-                    <Label text="Showtime"/><ComboBox fx:id="showCb" prefWidth="460" onAction="#seats"/>
-                    <VBox styleClass="card" alignment="CENTER"><GridPane fx:id="grid"/></VBox>
-                </VBox>
+            <!-- ACCOUNTS (superadmin only) -->
+            <VBox fx:id="pAcc" spacing="12" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Accounts" styleClass="h1"/><Label text="Staff who can log in to CineTix" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add account" styleClass="btn ok" onAction="#addAccount"/></HBox>
+                <TableView fx:id="accT" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <!-- ARCHIVE -->
+            <VBox fx:id="pArc" spacing="12" visible="false" managed="false">
+                <fx:define><ToggleGroup fx:id="arcTabs"/></fx:define>
+                <VBox><Label text="Archive" styleClass="h1"/><Label text="Nothing is deleted. Restore an item to bring it back." styleClass="muted"/></VBox>
+                <HBox spacing="8">
+                    <ToggleButton text="Movies" styleClass="pill" toggleGroup="$arcTabs" selected="true" onAction="#arcTab"/>
+                    <ToggleButton text="Showtimes" styleClass="pill" toggleGroup="$arcTabs" onAction="#arcTab"/>
+                    <ToggleButton fx:id="arcAccTab" text="Accounts" styleClass="pill" toggleGroup="$arcTabs" onAction="#arcTab"/>
+                </HBox>
+                <VBox fx:id="arcMoviesBox" VBox.vgrow="ALWAYS"><TableView fx:id="arcMovieT" VBox.vgrow="ALWAYS"/></VBox>
+                <VBox fx:id="arcShowsBox" VBox.vgrow="ALWAYS" visible="false" managed="false"><TableView fx:id="arcShowT" VBox.vgrow="ALWAYS"/></VBox>
+                <VBox fx:id="arcAccsBox" VBox.vgrow="ALWAYS" visible="false" managed="false"><TableView fx:id="arcAccT" VBox.vgrow="ALWAYS"/></VBox>
             </VBox>
         </StackPane>
     </center>

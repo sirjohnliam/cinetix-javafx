@@ -78,3 +78,14 @@
 .date-picker-popup .day-cell:today{-fx-border-color:#9b7bff}
 .date-picker-popup .day-cell:selected{-fx-background-color:#9b7bff;-fx-text-fill:#1a1230}
 .date-picker-popup .today-cell{-fx-text-fill:white}
+
+/* ---------- Round 1: coloured action buttons + form hints ---------- */
+.btn.ok{-fx-background-color:#3fbf7f;-fx-text-fill:#0d2a1c}
+.btn.ok:hover{-fx-background-color:#52d493}
+.sm.edit{-fx-background-color:#2f6fed;-fx-border-color:#2f6fed;-fx-text-fill:white}
+.sm.edit:hover{-fx-background-color:#4a85ff;-fx-border-color:#4a85ff}
+.sm.warn{-fx-background-color:#e8833a;-fx-border-color:#e8833a;-fx-text-fill:#1a1230}
+.sm.warn:hover{-fx-background-color:#f59a55;-fx-border-color:#f59a55}
+.sm.ok{-fx-background-color:#3fbf7f;-fx-border-color:#3fbf7f;-fx-text-fill:#0d2a1c}
+.sm.ok:hover{-fx-background-color:#52d493;-fx-border-color:#52d493}
+.ok-text{-fx-text-fill:#7ddc9a}

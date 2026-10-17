@@ -10,7 +10,7 @@
             <fx:define><ToggleGroup fx:id="nav"/></fx:define>
             <ToggleButton text="Overview" styleClass="nav" toggleGroup="$nav" selected="true" onAction="#navigate" maxWidth="Infinity"/>
             <ToggleButton text="Accounts" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
-            <ToggleButton fx:id="reqNav" text="Account requests" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
+            <ToggleButton text="Archive" styleClass="nav" toggleGroup="$nav" onAction="#navigate" maxWidth="Infinity"/>
             <Button text="Log out" styleClass="nav" onAction="#logout" maxWidth="Infinity"/>
             <Region VBox.vgrow="ALWAYS"/>
             <VBox spacing="2">
@@ -59,14 +59,14 @@
 
             <!-- ACCOUNTS -->
             <VBox fx:id="pAcc" spacing="12" visible="false" managed="false">
-                <HBox alignment="CENTER_LEFT"><VBox><Label text="Accounts" styleClass="h1"/><Label text="Staff who can log in to CineTix" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add account" styleClass="btn" onAction="#add"/></HBox>
+                <HBox alignment="CENTER_LEFT"><VBox><Label text="Accounts" styleClass="h1"/><Label text="Staff who can log in to CineTix" styleClass="muted"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="Add account" styleClass="btn ok" onAction="#add"/></HBox>
                 <TableView fx:id="accT" VBox.vgrow="ALWAYS"/>
             </VBox>
 
-            <!-- ACCOUNT REQUESTS -->
-            <VBox fx:id="pReq" spacing="12" visible="false" managed="false">
-                <VBox><Label text="Account requests" styleClass="h1"/><Label text="Sign-ups waiting for your approval" styleClass="muted"/></VBox>
-                <TableView fx:id="reqT" VBox.vgrow="ALWAYS"/>
+            <!-- ARCHIVE -->
+            <VBox fx:id="pArc" spacing="12" visible="false" managed="false">
+                <VBox><Label text="Archive" styleClass="h1"/><Label text="Past accounts. Restore one to let that person log in again." styleClass="muted"/></VBox>
+                <TableView fx:id="arcT" VBox.vgrow="ALWAYS"/>
             </VBox>
         </StackPane>
     </center>

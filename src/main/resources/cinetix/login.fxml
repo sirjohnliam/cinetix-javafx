@@ -11,19 +11,20 @@
     </VBox>
     <VBox alignment="CENTER" prefWidth="550" HBox.hgrow="ALWAYS">
         <VBox maxWidth="320" spacing="8">
-            <fx:define><ToggleGroup fx:id="roles"/></fx:define>
             <Label text="LOGIN" styleClass="h1" maxWidth="Infinity" alignment="CENTER"/>
             <Label text="For cinema staff only." styleClass="muted" maxWidth="Infinity" alignment="CENTER"/>
-            <HBox spacing="8" alignment="CENTER">
-                <ToggleButton text="Cashier" styleClass="pill" toggleGroup="$roles" selected="true"/>
-                <ToggleButton text="Admin" styleClass="pill" toggleGroup="$roles"/>
-                <ToggleButton text="Superadmin" styleClass="pill" toggleGroup="$roles"/>
-            </HBox>
             <Label text="Username"/><TextField fx:id="user" promptText="Type your username."/>
-            <Label text="Password"/><PasswordField fx:id="pass" promptText="Type your password." onAction="#login"/>
-            <Label fx:id="error" styleClass="error"/>
+            <Label text="Password"/>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <StackPane HBox.hgrow="ALWAYS">
+                    <PasswordField fx:id="pass" promptText="Type your password." onAction="#login" maxWidth="Infinity"/>
+                    <TextField fx:id="passText" promptText="Type your password." onAction="#login" maxWidth="Infinity" visible="false" managed="false"/>
+                </StackPane>
+                <Button fx:id="eye" text="Show" styleClass="sm" onAction="#togglePw" minWidth="56"/>
+            </HBox>
+            <Label fx:id="error" styleClass="error" wrapText="true"/>
             <Button text="Log in" styleClass="btn" maxWidth="Infinity" onAction="#login" defaultButton="true"/>
-            <Button text="Request an account" styleClass="link" maxWidth="Infinity" onAction="#signup"/>
+            <Button text="Forgot password?" styleClass="link" maxWidth="Infinity" onAction="#forgot"/>
         </VBox>
     </VBox>
 </HBox>

@@ -7,9 +7,12 @@ import java.time.*;
 import java.time.format.*;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javafx.animation.ScaleTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.geometry.*;
 import javafx.print.PrinterJob;
 import javafx.scene.Node;
@@ -53,6 +56,18 @@ public class Ui {
     static String d(Object d) { return LocalDate.parse(d.toString()).format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US)); }
     static String s(Map<String, Object> m, String k) { if (m == null) return null; Object v = m.get(k); return v == null ? null : String.valueOf(v); }
     static Label lbl(String t, String... cls) { Label l = new Label(t); l.getStyleClass().addAll(cls); return l; }
+
+    /** Maximum characters per form field, enforced while typing and shown as a live counter. */
+    static final Map<String, Integer> LIMITS = Map.ofEntries(
+            Map.entry("name", 50), Map.entry("username", 20), Map.entry("password", 32), Map.entry("password2", 32),
+            Map.entry("answer", 50), Map.entry("title", 100), Map.entry("genre", 50), Map.entry("length", 3),
+            Map.entry("synopsis", 300), Map.entry("cinema", 30), Map.entry("price", 7), Map.entry("date", 10), Map.entry("time", 5));
+    /** Stops typing and pasting past max characters (text already longer than max can still be shortened). */
+    static void limit(TextInputControl c, int max) {
+        c.setTextFormatter(new TextFormatter<String>(ch -> ch.getControlNewText().length() <= max
+                || ch.getControlNewText().length() < ch.getControlText().length() ? ch : null));
+    }
+    record Act(String name, Consumer<Map<String, Object>> fn) {}
 
     /** A short lift on hover for every button/toggle button already on screen. Called once per screen after it loads. */
     static void animateHover(Parent root) {
@@ -130,13 +145,21 @@ public class Ui {
         t.setFixedCellSize(52);   // every row the same height, so a poster thumbnail can't push a row out of line with its buttons
     }
     static void actions(TableView<Map<String, Object>> t, String n1, Consumer<Map<String, Object>> f1, String n2, Consumer<Map<String, Object>> f2) {
-        TableColumn<Map<String, Object>, Void> c = new TableColumn<>(""); c.setMinWidth(240);
+        actionList(t, new Act(n1, f1), new Act(n2, f2));
+    }
+    /** A column of row buttons. Edit = blue, Archive/Delete = orange, Restore/Approve = green, others stay plain. */
+    static void actionList(TableView<Map<String, Object>> t, Act... acts) {
+        TableColumn<Map<String, Object>, Void> c = new TableColumn<>(""); c.setMinWidth(Math.max(240, 125 * acts.length));
         c.setCellFactory(x -> new TableCell<>() {
-            final HBox box = new HBox(6, btn(n1, f1), btn(n2, f2));
-            { setAlignment(Pos.CENTER_LEFT); box.setAlignment(Pos.CENTER_LEFT); }
-            private Button btn(String n, Consumer<Map<String, Object>> f) {
-                Button z = new Button(n); z.getStyleClass().add("sm");
-                z.setOnAction(e -> f.accept(getTableView().getItems().get(getIndex()))); return z;
+            final HBox box = new HBox(6);
+            { setAlignment(Pos.CENTER_LEFT); box.setAlignment(Pos.CENTER_LEFT); for (Act a : acts) box.getChildren().add(btn(a)); }
+            private Button btn(Act a) {
+                Button z = new Button(a.name()); z.getStyleClass().add("sm");
+                String n = a.name().toLowerCase();
+                if (n.startsWith("edit")) z.getStyleClass().add("edit");
+                else if (n.startsWith("archive") || n.startsWith("delete")) z.getStyleClass().add("warn");
+                else if (n.startsWith("restore") || n.startsWith("approve")) z.getStyleClass().add("ok");
+                z.setOnAction(e -> a.fn().accept(getTableView().getItems().get(getIndex()))); return z;
             }
             @Override protected void updateItem(Void v, boolean empty) { super.updateItem(v, empty); setGraphic(empty ? null : box); }
         });
@@ -146,14 +169,24 @@ public class Ui {
     /** Reads whatever control a field produced, whatever its type. */
     static String readValue(Node n) {
         if (n instanceof ComboBox<?> cb) return String.valueOf(cb.getValue());
+        if (n instanceof PasswordField pf) return pf.getText();   // passwords are not trimmed
         if (n instanceof TextArea ta) return ta.getText().trim();
         if (n instanceof HBox box && !box.getChildren().isEmpty() && box.getChildren().get(0) instanceof TextField tf) return tf.getText().trim();
         if (n instanceof TextInputControl ti) return ti.getText().trim();
         return "";
     }
 
-    /** A pop-up form. Field key "synopsis" gets a multi-line box; key "poster" gets a file picker. */
-    static Optional<Map<String, String>> form(String title, F... fs) {
+    /** A pop-up form. Field key "synopsis" gets a multi-line box; key "poster" gets a file picker.
+     * Text boxes stop at their LIMITS length and show a live counter. check (optional) runs when OK is pressed and returns
+     * an error message (the dialog stays open) or null. live (optional) maps a field key to a hint shown while typing;
+     * a hint starting with a tick is shown green, any other hint red. */
+    static Optional<Map<String, String>> form(String title, F... fs) { return formImpl(title, null, null, fs); }
+    static Optional<Map<String, String>> form(String title, Function<Map<String, String>, String> check, F... fs) { return formImpl(title, check, null, fs); }
+    static Optional<Map<String, String>> form(String title, Function<Map<String, String>, String> check,
+                                              Map<String, Function<String, String>> live, F... fs) { return formImpl(title, check, live, fs); }
+
+    private static Optional<Map<String, String>> formImpl(String title, Function<Map<String, String>, String> check,
+                                                          Map<String, Function<String, String>> live, F... fs) {
         Dialog<Map<String, String>> d = new Dialog<>(); d.setTitle(title); d.setHeaderText(title);
         GridPane g = new GridPane(); g.setHgap(10); g.setVgap(10); g.setPadding(new Insets(10));
         Map<String, Node> ctl = new LinkedHashMap<>(); int i = 0;
@@ -176,16 +209,36 @@ public class Ui {
             } else {
                 TextField tf = f.k().startsWith("password") ? new PasswordField() : new TextField(); tf.setText(f.v() == null ? "" : f.v()); tf.setPrefWidth(260); c = tf;
             }
-            g.addRow(i++, new Label(f.label()), c); ctl.put(f.k(), c);
+            Node cell = c;
+            if (c instanceof TextInputControl ti) {
+                Integer max = LIMITS.get(f.k()); if (max != null) limit(ti, max);
+                Function<String, String> lv = live == null ? null : live.get(f.k());
+                Label hint = lbl("", "muted"); hint.setWrapText(true); hint.setMaxWidth(280);
+                Runnable upd = () -> {
+                    String txt = ti.getText() == null ? "" : ti.getText();
+                    String msg = lv == null ? null : lv.apply(ti instanceof PasswordField ? txt : txt.trim());
+                    hint.getStyleClass().removeAll("error", "ok-text");
+                    if (msg != null) { hint.setText(msg); hint.getStyleClass().add(msg.startsWith("✓") ? "ok-text" : "error"); }
+                    else hint.setText(max == null ? "" : txt.length() + "/" + max);
+                };
+                ti.textProperty().addListener((o, x, y) -> upd.run()); upd.run();
+                cell = new VBox(2, c, hint);
+            }
+            g.addRow(i++, new Label(f.label()), cell); ctl.put(f.k(), c);
         }
-        d.getDialogPane().setContent(g); style(d.getDialogPane());
+        Label err = lbl("", "error"); err.setWrapText(true); err.setMaxWidth(430);
+        d.getDialogPane().setContent(new VBox(8, g, err)); style(d.getDialogPane());
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        d.setResultConverter(b -> {
-            if (b != ButtonType.OK) return null;
+        Supplier<Map<String, String>> read = () -> {
             Map<String, String> m = new HashMap<>();
             ctl.forEach((k, c) -> m.put(k, readValue(c)));
             return m;
+        };
+        if (check != null) ((Button) d.getDialogPane().lookupButton(ButtonType.OK)).addEventFilter(ActionEvent.ACTION, ev -> {
+            String msg = check.apply(read.get());
+            if (msg != null) { err.setText(msg); ev.consume(); }
         });
+        d.setResultConverter(b -> b == ButtonType.OK ? read.get() : null);
         return d.showAndWait();
     }
 
