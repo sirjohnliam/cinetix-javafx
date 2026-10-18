@@ -62,7 +62,7 @@
 
             <!-- ========== STEP 2: SHOWTIME AND SEATS ========== -->
             <VBox fx:id="pBook" spacing="10" visible="false" managed="false">
-                <Button text="← Back to movies" styleClass="link" onAction="#backMovies"/>
+                <Button text="← Back to movies" styleClass="sm" onAction="#backMovies"/>
 
                 <HBox spacing="16" VBox.vgrow="ALWAYS">
 

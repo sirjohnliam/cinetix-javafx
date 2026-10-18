@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
 
 <HBox styleClass="root-dark" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.LoginController">
 
@@ -26,7 +26,10 @@
     <VBox alignment="CENTER" prefWidth="550" HBox.hgrow="ALWAYS">
         <VBox maxWidth="340" spacing="12">
             <VBox spacing="4" alignment="CENTER" style="-fx-padding: 0 0 12 0;">
-                <Label alignment="CENTER" maxWidth="Infinity" styleClass="h1" text="WELCOME BACK"/>
+                <ImageView fitHeight="80" preserveRatio="true">
+                    <image><Image url="@images/1.png"/></image>
+                </ImageView>
+                <Label alignment="CENTER" maxWidth="Infinity" styleClass="h1" text="WELCOME!"/>
                 <Label alignment="CENTER" maxWidth="Infinity" styleClass="muted" text="Please sign in to continue to CineTix"/>
             </VBox>
 

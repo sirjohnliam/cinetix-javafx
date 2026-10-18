@@ -2,7 +2,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="cinetix.AdminController" styleClass="root-dark">
@@ -12,7 +14,9 @@
         <VBox styleClass="side" spacing="4" prefWidth="190" minWidth="190">
             <padding><Insets top="18" right="12" bottom="18" left="12"/></padding>
 
-            <Label text="CineTix" styleClass="brand"/>
+            <ImageView fitHeight="30" preserveRatio="true">
+                <image><Image url="@images/1.png"/></image>
+            </ImageView>
             <Region prefHeight="14"/>
 
             <fx:define><ToggleGroup fx:id="nav"/></fx:define>
@@ -31,7 +35,7 @@
                 <Label fx:id="role" styleClass="user-role"/>
             </VBox>
             <Region prefHeight="8"/>
-            <Button text="Log out" styleClass="sm, warn" onAction="#logout"/>
+            <Button text="Log out" styleClass="sm, warn" onAction="#logout" prefWidth="150"/>
         </VBox>
     </left>
 
