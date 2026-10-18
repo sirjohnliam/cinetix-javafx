@@ -2,6 +2,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="cinetix.CashierController" styleClass="root-dark">
@@ -11,13 +12,16 @@
         <HBox alignment="CENTER_LEFT" spacing="30" styleClass="side">
             <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
             <Label text="CineTix" styleClass="brand"/>
+            <ImageView fitHeight="50" preserveRatio="true">
+                <image><Image url="@images/1.png"/></image>
+            </ImageView>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="step1" styleClass="muted"/>
             <Label fx:id="step2" styleClass="muted"/>
             <Label fx:id="step3" styleClass="muted"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="who"/>
-            <Button text="Log out" styleClass="sm warn" onAction="#logout"/>
+            <Button text="Log out" styleClass="sm, warn" onAction="#logout"/>
         </HBox>
     </top>
 
