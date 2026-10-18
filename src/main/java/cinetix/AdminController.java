@@ -63,8 +63,19 @@ public class AdminController {
 
         // movies (with their showtimes) + seat list
         Ui.cols(movieT, "Movie", "title", "Genre", "genre", "Rating", "rating", "Length (min)", "length", "Upcoming showtimes", "upcoming");
-        Ui.posterCol(movieT, 90, 130);
-        movieT.setFixedCellSize(150);
+        Ui.posterCol(movieT, 130, 190); // Increased poster column dimensions
+        movieT.setFixedCellSize(210);   // Matched row height to accommodate larger posters
+        movieT.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        movieT.setMaxWidth(Double.MAX_VALUE);
+
+// Force columns to stretch and fill table width nicely without dead spots on the right
+        movieT.getColumns().get(0).setPrefWidth(140); // Poster column
+        movieT.getColumns().get(1).setPrefWidth(220); // Movie Title
+        movieT.getColumns().get(2).setPrefWidth(130); // Genre
+        movieT.getColumns().get(3).setPrefWidth(100); // Rating
+        movieT.getColumns().get(4).setPrefWidth(130); // Length (min)
+        movieT.getColumns().get(5).setPrefWidth(180); // Upcoming showtimes
+
         Ui.actionList(movieT, new Act("Edit", this::movieForm), new Act("Archive", this::archiveMovie));
         Ui.cols(resT, "Code", "code", "Movie", "title", "Showtime", "showtime", "Seat", "seats", "Total", "$total", "Sold by", "sold_by");
 

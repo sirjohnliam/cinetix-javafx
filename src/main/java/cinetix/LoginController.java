@@ -19,7 +19,7 @@ public class LoginController {
     @FXML void togglePw() {
         boolean show = !passText.isVisible();
         Ui.vis(passText, show); Ui.vis(pass, !show);
-        eye.setText(show ? "Hide" : "Show");
+        eye.setText(show ? "🔒" : "👁"); // Switches between visible and hidden icon indicators
         (show ? passText : pass).requestFocus();
     }
 
@@ -33,7 +33,7 @@ public class LoginController {
             String role = (String) u.get("role");
             App.uid = ((Number) u.get("id")).intValue(); App.name = (String) u.get("name"); App.role = role;
             Ui.info("Welcome, " + App.name + "! You're logged in as " + cap(role) + ".");
-            App.show(role.equals("superadmin") ? "super" : role);   // cashier.fxml / admin.fxml / super.fxml
+            App.show(role.equals("cashier") ? "cashier" : "admin");   // admin and superadmin share admin.fxml
         } catch (Exception e) { error.setText(e.getMessage()); }
     }
 

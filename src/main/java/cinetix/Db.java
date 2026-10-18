@@ -11,10 +11,6 @@ public class Db {
     static final String HOST = "jdbc:mariadb://localhost:3306/", NAME = "cinetix_app", USER = "root", PASS = "";
     static final int CAPACITY = 72;   // 6 rows x 12 seats
 
-    // Constants required by AdminController and forms
-    public static final String[] GENRES = {"Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Romance", "Thriller", "Adventure", "Animation", "Fantasy"};
-    public static final String[] CINEMAS = {"Cinema 1", "Cinema 2", "Cinema 3", "Cinema 4"};
-
     static Connection conn() throws SQLException { return DriverManager.getConnection(HOST + NAME, USER, PASS); }
 
     /** Creates the database, tables and demo data on first run. */
@@ -85,56 +81,41 @@ public class Db {
             }
         }
     }
-
     static Object one(String sql, Object... a) throws SQLException {
         var r = query(sql, a); return r.isEmpty() ? null : r.get(0).values().iterator().next();
     }
-
     static int update(String sql, Object... a) throws SQLException {
         try (Connection c = conn(); PreparedStatement p = c.prepareStatement(sql)) {
             for (int i = 0; i < a.length; i++) p.setObject(i + 1, a[i]);
             return p.executeUpdate();
         }
     }
-
-    // ---- Transaction helpers (added to support AdminController batch execution) ----
-
-    @FunctionalInterface
-    public interface SqlConsumer<T> {
-        void accept(T t) throws Exception;
-    }
-
-    static void tx(SqlConsumer<Connection> action) throws Exception {
-        try (Connection c = conn()) {
-            c.setAutoCommit(false);
-            try {
-                action.accept(c);
-                c.commit();
-            } catch (Exception e) {
-                c.rollback();
-                throw e;
-            } finally {
-                c.setAutoCommit(true);
-            }
-        }
-    }
-
-    static Object exec(Connection c, String sql, Object... a) throws SQLException {
-        try (PreparedStatement p = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            for (int i = 0; i < a.length; i++) p.setObject(i + 1, a[i]);
-            int affected = p.executeUpdate();
-            try (ResultSet keys = p.getGeneratedKeys()) {
-                if (keys != null && keys.next()) {
-                    return keys.getObject(1);
-                }
-            }
-            return affected;
-        }
-    }
-
     static String newCode() throws SQLException {
         String c; do { c = String.format("CT-%04d", new Random().nextInt(10000)); } while (one("SELECT 1 FROM reservations WHERE code=?", c) != null);
         return c;
+    }
+
+    // ---- lists used by the movie form ----
+    static final String[] GENRES = {"Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
+            "Fantasy", "Horror", "Musical", "Mystery", "Romance", "Sci-Fi", "Thriller", "War"};
+    static final String[] CINEMAS = {"Cinema 1", "Cinema 2", "Cinema 3", "Cinema 4", "Cinema 5", "Cinema 6"};
+
+    // ---- several statements saved as one unit ----
+    interface Work { void run(Connection c) throws Exception; }
+    /** All statements run on one connection: they are all saved, or none are. */
+    static void tx(Work w) throws Exception {
+        try (Connection c = conn()) {
+            c.setAutoCommit(false);
+            try { w.run(c); c.commit(); } catch (Exception e) { c.rollback(); throw e; }
+        }
+    }
+    /** Runs one INSERT/UPDATE on an open connection; returns the new row's id (0 for an update). */
+    static long exec(Connection c, String sql, Object... a) throws SQLException {
+        try (PreparedStatement p = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (int i = 0; i < a.length; i++) p.setObject(i + 1, a[i]);
+            p.executeUpdate();
+            try (ResultSet k = p.getGeneratedKeys()) { return k.next() ? k.getLong(1) : 0; }
+        }
     }
 
     // ---- account rules (used by the login, forgot-password and account forms) ----

@@ -2,64 +2,56 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <HBox styleClass="root-dark" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.LoginController">
-    <VBox alignment="TOP_CENTER" prefWidth="550" styleClass="login-left" HBox.hgrow="ALWAYS">
-      <StackPane alignment="TOP_LEFT" prefHeight="150.0" prefWidth="200.0">
-         <children>
-            <ImageView fitHeight="850.0" fitWidth="2000.0" opacity="0.8" pickOnBounds="true" preserveRatio="true" x="20.0" y="20.0" StackPane.alignment="TOP_LEFT">
-               <image>
-                  <Image url="@images/MOVIE-POSTER.png" />
-               </image>
-               <StackPane.margin>
-                  <Insets left="-50.0" top="-50.0" />
-               </StackPane.margin>
-            </ImageView>
-              <Label alignment="TOP_LEFT" styleClass="brand-big" text="CineTix" textFill="WHITE" StackPane.alignment="TOP_LEFT">
-               <StackPane.margin>
-                  <Insets />
-               </StackPane.margin></Label>
-              <Label alignment="BOTTOM_LEFT" styleClass="muted" text="Sell tickets, manage showtimes and accounts. Your role decides which screen opens." wrapText="true" StackPane.alignment="BOTTOM_LEFT">
-               <padding>
-                  <Insets bottom="50.0" />
-               </padding>
-               <StackPane.margin>
-                  <Insets bottom="50.0" />
-               </StackPane.margin></Label>
-              <Label styleClass="h1" text="Staff portal" StackPane.alignment="BOTTOM_LEFT">
-               <padding>
-                  <Insets bottom="100.0" />
-               </padding>
-               <StackPane.margin>
-                  <Insets bottom="30.0" />
-               </StackPane.margin></Label>
-         </children>
-      </StackPane>
-    </VBox>
-    <VBox alignment="CENTER" prefWidth="550" HBox.hgrow="ALWAYS">
-        <VBox maxWidth="320" spacing="8">
-            <Label alignment="CENTER" maxWidth="Infinity" styleClass="h1" text="LOGIN" />
-            <Label alignment="CENTER" maxWidth="Infinity" styleClass="muted" text="For cinema staff only." />
-            <Label text="Username" /><TextField fx:id="user" promptText="Type your username." />
-            <Label text="Password" />
-            <HBox alignment="CENTER_LEFT" spacing="6">
-                <StackPane HBox.hgrow="ALWAYS">
-                    <PasswordField fx:id="pass" maxWidth="Infinity" onAction="#login" promptText="Type your password." />
-                    <TextField fx:id="passText" managed="false" maxWidth="Infinity" onAction="#login" promptText="Type your password." visible="false" />
-                </StackPane>
-                <Button fx:id="eye" minWidth="56" onAction="#togglePw" styleClass="sm" text="Show" />
-            </HBox>
-            <Label fx:id="error" styleClass="error" wrapText="true" />
-            <Button defaultButton="true" maxWidth="Infinity" onAction="#login" styleClass="btn" text="Log in" />
-            <Button maxWidth="Infinity" onAction="#forgot" styleClass="link" text="Forgot password?" />
+
+    <!-- LEFT: poster collage with a rich dark fade for high contrast -->
+    <StackPane styleClass="login-art" prefWidth="550" HBox.hgrow="ALWAYS">
+        <Region maxWidth="Infinity" maxHeight="Infinity"
+                style="-fx-background-color: linear-gradient(to bottom, rgba(19,17,28,0.55), rgba(19,17,28,0.96));"/>
+        <VBox spacing="12" alignment="TOP_LEFT">
+            <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+            <Label text="CineTix" styleClass="brand-big"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox spacing="6">
+                <Label text="Staff portal" styleClass="h1"/>
+                <Label text="Sell tickets, manage showtimes and accounts. Your role decides which screen opens."
+                       styleClass="muted" wrapText="true" style="-fx-text-fill: #cfc7ff; -fx-font-size: 13px;"/>
+            </VBox>
         </VBox>
-      <opaqueInsets>
-         <Insets />
-      </opaqueInsets>
-      <HBox.margin>
-         <Insets />
-      </HBox.margin>
+    </StackPane>
+
+    <!-- RIGHT: modern login form -->
+    <VBox alignment="CENTER" prefWidth="550" HBox.hgrow="ALWAYS">
+        <VBox maxWidth="340" spacing="12">
+            <VBox spacing="4" alignment="CENTER" style="-fx-padding: 0 0 12 0;">
+                <Label alignment="CENTER" maxWidth="Infinity" styleClass="h1" text="WELCOME BACK"/>
+                <Label alignment="CENTER" maxWidth="Infinity" styleClass="muted" text="Please sign in to continue to CineTix"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Username"/>
+                <TextField fx:id="user" promptText="Enter your username"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Password"/>
+                <!-- Modern StackPane wrapping fields + embedded floating eye icon button -->
+                <StackPane>
+                    <PasswordField fx:id="pass" maxWidth="Infinity" onAction="#login" promptText="Enter your password" style="-fx-padding: 8 38 8 10;"/>
+                    <TextField fx:id="passText" managed="false" maxWidth="Infinity" onAction="#login" promptText="Enter your password" visible="false" style="-fx-padding: 8 38 8 10;"/>
+                    <Button fx:id="eye" onAction="#togglePw" styleClass="icon-eye-btn" StackPane.alignment="CENTER_RIGHT" text="👁"
+                            style="-fx-background-color: transparent; -fx-text-fill: #8b87a0; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 0 10 0 0;"/>
+                </StackPane>
+            </VBox>
+
+            <Label fx:id="error" styleClass="error" wrapText="true"/>
+
+            <VBox spacing="10" style="-fx-padding: 8 0 0 0;">
+                <Button defaultButton="true" maxWidth="Infinity" onAction="#login" styleClass="btn, lg" text="Sign In"/>
+                <Button maxWidth="Infinity" onAction="#forgot" styleClass="link" text="Forgot password?" alignment="CENTER"/>
+            </VBox>
+        </VBox>
     </VBox>
 </HBox>

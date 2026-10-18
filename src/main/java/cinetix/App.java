@@ -8,9 +8,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class App extends Application {
@@ -24,16 +26,21 @@ public class App extends Application {
             Ui.error("Can't reach the database.\nOpen XAMPP and start MySQL, then run again.\n\n" + e.getMessage());
             Platform.exit(); return;
         }
+
+        // Set the global window/taskbar application icon using your logo asset
+        try {
+            s.getIcons().add(new Image(App.class.getResourceAsStream("/cinetix/images/1.png")));
+        } catch (Exception ignored) {}
+
         s.setTitle("CineTix");
+        s.initStyle(StageStyle.UNDECORATED); // Removes the Windows title bar and close/minimize buttons completely
         s.setFullScreenExitHint("Press F11 to leave full screen.");
         fillScreen();
         show("login");
         s.show();
-        fillScreen();   // re-applied once the window is actually on screen; some Windows setups need this second call
+        fillScreen();
     }
 
-    /** Sizes the window to the full screen. Done instead of setMaximized(true), which some Windows setups quietly
-     * undo the moment a new Scene is attached to the Stage (e.g. after every screen change here). */
     static void fillScreen() {
         Rectangle2D b = Screen.getPrimary().getVisualBounds();
         stage.setX(b.getMinX()); stage.setY(b.getMinY());
@@ -48,8 +55,16 @@ public class App extends Application {
             sc.getStylesheets().add(Ui.css());
             sc.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.F11) stage.setFullScreen(!stage.isFullScreen()); });
             stage.setScene(sc);
+
+            // Ensure every new scene loaded also updates or re-applies the stage icon
+            try {
+                stage.getIcons().setAll(new Image(App.class.getResourceAsStream("/cinetix/images/1.png")));
+            } catch (Exception ignored) {}
+
+            stage.show();
             fillScreen();
             Ui.animateHover(p);
+            Ui.addLogos(p);
             FadeTransition ft = new FadeTransition(Duration.millis(220), p);
             ft.setFromValue(0); ft.setToValue(1); ft.play();
         } catch (IOException e) { throw new RuntimeException(e); }

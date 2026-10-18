@@ -2,49 +2,128 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cinetix.CashierController" styleClass="root-dark">
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="cinetix.CashierController" styleClass="root-dark">
+
+    <!-- ========== TOP BAR ========== -->
     <top>
         <HBox alignment="CENTER_LEFT" spacing="30" styleClass="side">
             <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
-            <Label text="CineTix" styleClass="brand"/><Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="step1" styleClass="muted"/><Label fx:id="step2" styleClass="muted"/><Label fx:id="step3" styleClass="muted"/>
+            <Label text="CineTix" styleClass="brand"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="who"/><Button text="Log out" styleClass="sm" onAction="#logout"/>
+            <Label fx:id="step1" styleClass="muted"/>
+            <Label fx:id="step2" styleClass="muted"/>
+            <Label fx:id="step3" styleClass="muted"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="who"/>
+            <Button text="Log out" styleClass="sm warn" onAction="#logout"/>
         </HBox>
     </top>
+
     <center>
         <StackPane>
-            <padding><Insets top="22" right="24" bottom="22" left="24"/></padding>
-            <VBox fx:id="pMovies" spacing="8">
-                <Label text="Now showing" styleClass="h1"/><Label fx:id="dateLbl" styleClass="muted"/>
-                <ScrollPane fitToWidth="true" styleClass="clear" VBox.vgrow="ALWAYS"><FlowPane fx:id="posters" hgap="20" vgap="20"><padding><Insets top="10"/></padding></FlowPane></ScrollPane>
+            <padding><Insets top="16" right="24" bottom="16" left="24"/></padding>
+
+            <!-- ========== STEP 1: NOW SHOWING + UPCOMING ========== -->
+            <VBox fx:id="pMovies" spacing="10">
+
+                <!-- Title on the left, compact stat cards on the right -->
+                <HBox alignment="CENTER_LEFT" spacing="14">
+                    <VBox spacing="4" minWidth="-Infinity" HBox.hgrow="ALWAYS">
+                        <Label text="Now showing" styleClass="h1"/>
+                        <Label fx:id="dateLbl" styleClass="muted"/>
+                    </VBox>
+                    <VBox styleClass="card, stat-card" spacing="2">
+                        <Label fx:id="myTix" styleClass="stat-value"/>
+                        <Label text="Tickets you sold today" styleClass="muted"/>
+                    </VBox>
+                    <VBox styleClass="card, stat-card" spacing="2">
+                        <Label fx:id="mySales" styleClass="stat-value, gold"/>
+                        <Label text="Your sales today" styleClass="muted"/>
+                    </VBox>
+                </HBox>
+
+                <FlowPane fx:id="genreBar" hgap="8" vgap="8"/>
+
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="clear" VBox.vgrow="ALWAYS">
+                    <VBox spacing="10">
+                        <padding><Insets top="4" right="8" bottom="10" left="0"/></padding>
+                        <FlowPane fx:id="posters" hgap="14" vgap="14"/>
+                        <Region prefHeight="4"/>
+                        <VBox spacing="2">
+                            <Label text="Upcoming" styleClass="h1"/>
+                            <Label text="Coming soon. Tickets go on sale on the opening day." styleClass="muted"/>
+                        </VBox>
+                        <FlowPane fx:id="upcoming" hgap="14" vgap="14"/>
+                    </VBox>
+                </ScrollPane>
             </VBox>
-            <VBox fx:id="pTimes" spacing="10" visible="false" managed="false">
-                <Button text="Back to now showing" styleClass="link" onAction="#backMovies"/>
-                <HBox spacing="20">
-                    <StackPane fx:id="tPicBox" prefWidth="150" minWidth="150" prefHeight="200"/>
-                    <VBox spacing="10" maxWidth="560"><Label fx:id="tTitle" styleClass="h1"/><Label fx:id="tMeta" styleClass="muted"/>
+
+            <!-- ========== STEP 2: SHOWTIME AND SEATS ========== -->
+            <VBox fx:id="pBook" spacing="10" visible="false" managed="false">
+                <Button text="← Back to movies" styleClass="link" onAction="#backMovies"/>
+
+                <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+                    <!-- Left: movie details + showtimes -->
+                    <VBox styleClass="card" spacing="12" prefWidth="390" minWidth="350" maxWidth="430">
+                        <HBox spacing="14">
+                            <StackPane fx:id="tPicBox" prefWidth="130" minWidth="130" prefHeight="190" alignment="TOP_LEFT"/>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label fx:id="tTitle" styleClass="h1" wrapText="true"/>
+                                <Label fx:id="tMeta" styleClass="muted" wrapText="true"/>
+                            </VBox>
+                        </HBox>
                         <Label fx:id="tSynopsis" wrapText="true"/>
-                        <FlowPane fx:id="times" hgap="10" vgap="10" prefWrapLength="600"/>
-                        <Button text="Choose seats" styleClass="btn" onAction="#chooseSeats"/></VBox>
+                        <Label text="Showtimes today" styleClass="h2"/>
+                        <FlowPane fx:id="times" hgap="10" vgap="10" prefWrapLength="340"/>
+                    </VBox>
+
+                    <!-- Right: seat map + order summary -->
+                    <VBox spacing="14" HBox.hgrow="ALWAYS">
+
+                        <VBox styleClass="card" alignment="TOP_CENTER" spacing="10" VBox.vgrow="ALWAYS">
+                            <Region styleClass="screen-bar" prefHeight="5" maxWidth="440"/>
+                            <Label text="Screen" styleClass="muted"/>
+                            <Label fx:id="seatHint" styleClass="muted" wrapText="true" visible="false" managed="false"/>
+                            <GridPane fx:id="grid"/>
+
+                            <!-- Legend -->
+                            <HBox spacing="22" alignment="CENTER">
+                                <HBox spacing="6" alignment="CENTER_LEFT">
+                                    <Region styleClass="legend-box, legend-available"/>
+                                    <Label text="Available" styleClass="muted"/>
+                                </HBox>
+                                <HBox spacing="6" alignment="CENTER_LEFT">
+                                    <Region styleClass="legend-box, legend-selected"/>
+                                    <Label text="Selected" styleClass="muted"/>
+                                </HBox>
+                                <HBox spacing="6" alignment="CENTER_LEFT">
+                                    <Region styleClass="legend-box, legend-taken"/>
+                                    <Label text="Taken" styleClass="muted"/>
+                                </HBox>
+                            </HBox>
+                        </VBox>
+
+                        <HBox styleClass="card" spacing="24" alignment="CENTER_LEFT">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label fx:id="sTitle" styleClass="h2"/>
+                                <Label fx:id="sWhen" styleClass="muted"/>
+                                <Label fx:id="sCinema"/>
+                                <Label fx:id="sPrice"/>
+                            </VBox>
+                            <VBox spacing="4" alignment="CENTER_RIGHT">
+                                <Label fx:id="sSeats" wrapText="true" maxWidth="280"/>
+                                <Label fx:id="sTotal" styleClass="h1, gold"/>
+                            </VBox>
+                            <Button fx:id="reviewBtn" text="Review order" styleClass="btn, ok, lg"
+                                    onAction="#review" disable="true"/>
+                        </HBox>
+                    </VBox>
                 </HBox>
             </VBox>
-            <VBox fx:id="pSeats" spacing="8" visible="false" managed="false">
-                <Button text="Back to showtime" styleClass="link" onAction="#backTimes"/>
-                <Label text="Choose seats" styleClass="h1"/><Label text="Click seats to add them. Red seats are already taken." styleClass="muted"/>
-                <HBox spacing="14" VBox.vgrow="ALWAYS">
-                    <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="TOP_CENTER" spacing="8">
-                        <Region style="-fx-background-color:#9b7bff;" prefHeight="4" maxWidth="400"/><Label text="Screen" styleClass="muted"/>
-                        <GridPane fx:id="grid"/>
-                        <Label text="Outlined = available, purple = selected, red = taken" styleClass="muted"/>
-                    </VBox>
-                    <VBox styleClass="card" prefWidth="270" minWidth="270" spacing="10">
-                        <Label fx:id="sTitle" styleClass="h2"/><Label fx:id="sWhen" styleClass="muted"/><Label fx:id="sCinema"/><Label fx:id="sPrice"/>
-                        <Label fx:id="sSeats" wrapText="true"/><Label fx:id="sTotal" styleClass="h1"/>
-                        <Button text="Review order" styleClass="btn" maxWidth="Infinity" onAction="#review"/>
-                    </VBox>
-                </HBox>
-            </VBox>
+
         </StackPane>
     </center>
 </BorderPane>

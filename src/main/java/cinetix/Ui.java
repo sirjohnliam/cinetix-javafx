@@ -22,6 +22,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -69,6 +73,46 @@ public class Ui {
     }
     record Act(String name, Consumer<Map<String, Object>> fn) {}
 
+    /** Loads your system image asset logo (1.png), or falls back to a code-drawn badge if unavailable. */
+    static Node logoIcon(double s) {
+        try {
+            Image img = new Image(Ui.class.getResourceAsStream("/cinetix/images/1.png"));
+            if (!img.isError()) {
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(s);
+                iv.setFitHeight(s);
+                iv.setPreserveRatio(true);
+                return iv;
+            }
+        } catch (Exception ignored) {}
+
+        // Fallback code-drawn vector logo if image asset isn't found
+        Rectangle bg = new Rectangle(s, s); bg.setArcWidth(s * 0.32); bg.setArcHeight(s * 0.32);
+        bg.setFill(new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Color.web("#b49bff")), new Stop(1, Color.web("#6b47e0"))));
+        Polygon play = new Polygon(s * 0.40, s * 0.27, s * 0.40, s * 0.73, s * 0.76, s * 0.50);
+        play.setFill(Color.web("#f2b24a"));
+        Pane p = new Pane(bg, play);
+        for (int i = 0; i < 3; i++) {
+            Rectangle hole = new Rectangle(s * 0.10, s * (0.20 + (0.25 * i)), s * 0.11, s * 0.11);
+            hole.setArcWidth(s * 0.04); hole.setArcHeight(s * 0.04); hole.setFill(Color.web("#ffffff", 0.85));
+            p.getChildren().add(hole);
+        }
+        p.setPrefSize(s, s); p.setMinSize(s, s); p.setMaxSize(s, s);
+        return p;
+    }
+
+    /** Puts the logo in front of every "CineTix" brand label on a screen. Called once per screen from App.show. */
+    static void addLogos(Parent root) {
+        for (Node n : root.lookupAll(".brand, .brand-big")) {
+            if (n instanceof Label l) {
+                double s = l.getStyleClass().contains("brand-big") ? 54 : 30;
+                l.setGraphic(logoIcon(s)); l.setGraphicTextGap(s * 0.35); l.setContentDisplay(ContentDisplay.LEFT);
+            }
+        }
+    }
+    /** A small rounded genre tag. */
+    static Label genreTag(String g) { return lbl(g == null ? "" : g, "tag"); }
+
     /** A short lift on hover for every button/toggle button already on screen. Called once per screen after it loads. */
     static void animateHover(Parent root) {
         for (Node n : root.lookupAll(".button, .toggle-button")) {
@@ -80,8 +124,7 @@ public class Ui {
         ScaleTransition t = new ScaleTransition(Duration.millis(120), n); t.setToX(to); t.setToY(to); t.play();
     }
 
-    /** The movie's poster image if one was chosen and the file still exists, otherwise a plain colour block.
-     * A small thumbnail (as in a table row) shows the movie's initials; a bigger poster shows its full title. */
+    /** The movie's poster image if one was chosen and the file still exists, otherwise a plain colour block. */
     static Node moviePoster(Map<String, Object> m, double w, double h) {
         Object p = m == null ? null : m.get("poster_path");
         if (p != null && !String.valueOf(p).isBlank()) {
@@ -116,12 +159,18 @@ public class Ui {
     /** Poster column with a custom poster size (w x h). */
     static void posterCol(TableView<Map<String, Object>> t, double w, double h) {
         TableColumn<Map<String, Object>, Void> c = new TableColumn<>("");
-        c.setMinWidth(w + 24); c.setPrefWidth(w + 24); c.setMaxWidth(w + 24); c.setSortable(false);
+        c.setMinWidth(w + 35); c.setPrefWidth(w + 35); c.setMaxWidth(w + 35); c.setSortable(false);
         c.setCellFactory(x -> new TableCell<>() {
-            { setAlignment(Pos.CENTER); }
+            { setAlignment(Pos.CENTER_LEFT); }
             @Override protected void updateItem(Void v, boolean empty) {
                 super.updateItem(v, empty);
-                setGraphic(empty ? null : moviePoster(getTableView().getItems().get(getIndex()), w, h));
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox box = new HBox(moviePoster(getTableView().getItems().get(getIndex()), w, h));
+                    box.setPadding(new Insets(0, 0, 0, 15)); // Pushes poster slightly to the right
+                    setGraphic(box);
+                }
             }
         });
         t.getColumns().add(0, c);
@@ -149,10 +198,16 @@ public class Ui {
     }
     /** A column of row buttons. Edit = blue, Archive/Delete = orange, Restore/Approve = green, others stay plain. */
     static void actionList(TableView<Map<String, Object>> t, Act... acts) {
-        TableColumn<Map<String, Object>, Void> c = new TableColumn<>(""); c.setMinWidth(Math.max(240, 125 * acts.length));
+        TableColumn<Map<String, Object>, Void> c = new TableColumn<>("");
+        c.setMinWidth(Math.max(240, 125 * acts.length));
         c.setCellFactory(x -> new TableCell<>() {
             final HBox box = new HBox(6);
-            { setAlignment(Pos.CENTER_LEFT); box.setAlignment(Pos.CENTER_LEFT); for (Act a : acts) box.getChildren().add(btn(a)); }
+            {
+                setAlignment(Pos.CENTER_RIGHT); // Aligned to the right corner
+                box.setAlignment(Pos.CENTER_RIGHT);
+                box.setPadding(new Insets(0, 15, 0, 0)); // Right padding so buttons don't touch the edge
+                for (Act a : acts) box.getChildren().add(btn(a));
+            }
             private Button btn(Act a) {
                 Button z = new Button(a.name()); z.getStyleClass().add("sm");
                 String n = a.name().toLowerCase();
@@ -176,10 +231,7 @@ public class Ui {
         return "";
     }
 
-    /** A pop-up form. Field key "synopsis" gets a multi-line box; key "poster" gets a file picker.
-     * Text boxes stop at their LIMITS length and show a live counter. check (optional) runs when OK is pressed and returns
-     * an error message (the dialog stays open) or null. live (optional) maps a field key to a hint shown while typing;
-     * a hint starting with a tick is shown green, any other hint red. */
+    /** A pop-up form. Field key "synopsis" gets a multi-line box; key "poster" gets a file picker. */
     static Optional<Map<String, String>> form(String title, F... fs) { return formImpl(title, null, null, fs); }
     static Optional<Map<String, String>> form(String title, Function<Map<String, String>, String> check, F... fs) { return formImpl(title, check, null, fs); }
     static Optional<Map<String, String>> form(String title, Function<Map<String, String>, String> check,
@@ -244,8 +296,8 @@ public class Ui {
 
     /** Draws the seat map (A-F x 1-12). click == null makes it read-only. */
     static void fillSeats(GridPane g, Set<String> taken, Set<String> sel, Consumer<String> click) {
-        g.getChildren().clear(); g.setHgap(6); g.setVgap(8); g.setAlignment(Pos.CENTER);
-        Region gap = new Region(); gap.setMinWidth(40); g.add(gap, 7, 0);
+        g.getChildren().clear(); g.setHgap(10); g.setVgap(12); g.setAlignment(Pos.CENTER);
+        Region gap = new Region(); gap.setMinWidth(50); g.add(gap, 7, 0);
         for (int r = 0; r < 6; r++) {
             char row = (char) ('A' + r);
             g.add(lbl("" + row, "muted"), 0, r); g.add(lbl("" + row, "muted"), 14, r);
